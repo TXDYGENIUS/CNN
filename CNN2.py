@@ -38,7 +38,7 @@ def open_file(file):
         out[j] = out[j].view([-1, 9, 9])
     outt = out[0]
     for k in range(len(out) - 1):
-        outt = torch.cat((outt, out[k]), dim=0)
+        outt = torch.cat((outt, out[k+1]), dim=0)
     laber = torch.tensor(laber)
     return outt, laber  # 输出为数据，标签
 
