@@ -10,7 +10,7 @@ from torch.autograd import Variable
 
 batch_size = 1
 learning_rate = 0.008
-file_anomalous = 'F:\pythonProject\MachineLearningCVE\yichang.csv'
+file_anomalous = 'F:\pythonProject\MachineLearningCVE\PNN测试.csv'
 file_normal = 'F:\pythonProject\MachineLearningCVE\zhengchang.csv'
 file_2018 = 'F:\pythonProject\MachineLearningCVE\Sunday2.csv'
 
@@ -36,7 +36,7 @@ def open_file(file):
         out[j] = out[j].view([-1, 1, 78])
     outt = out[0]
     for k in range(len(out) - 1):
-        outt = torch.cat((outt, out[k+1]), dim=0)
+        outt = torch.cat((outt, out[k]), dim=0)
     laber = torch.tensor(laber)
     return outt, laber
 
@@ -110,6 +110,8 @@ def train(epoch, X_train, Y_train):
             hidden = hidden.data
             # 因为我们的rnn对象由nn.RNN实例化得到, 最终输出形状是三维张量, 为了满足于category_tensor
             # 进行对比计算损失, 需要减少第一个维度, 这里使用squeeze()方法
+
+
             loss = criterion(output.view([1]), Y_train[i].float())
             # 损失进行反向传播
             loss.backward()
@@ -120,10 +122,7 @@ def train(epoch, X_train, Y_train):
     return hidden
 
 
-hidden = train(6, X_train, Y_train)
-
-X_train, X_test, Y_train, Y_test = get_data(file_2018)
-hidden = train(6, X_test, Y_test)
+hidden = train(1, X_train, Y_train)
 
 
 # 测试函数
@@ -136,11 +135,13 @@ def test(X_test, Y_test, hidden):
         outputs, hidden = model(X_test[i].squeeze(1), hidden.float())
         hidden = hidden.data
         # outputs = outputs.view(-1)  # 由torch.Size([2，1])变成torch.Size([2]) 和标签y_train[i]匹配
-
+        for k, v in model.named_parameters():
+            print(k, v, v.size())
+            break
         for j in range(batch_size):
-            if outputs[j].item() - 0.5 >= 0 and Y_test[i][j].item() == 1:
+            if outputs[j].item() >= 0.5 and Y_test[i][j].item() == 1:
                 a = a + 1
-            if outputs[j].item() - 0.5 < 0 and Y_test[i][j].item() == 0:
+            if outputs[j].item() < 0.5 and Y_test[i][j].item() == 0:
                 a = a + 1
 
     print(a / len(X_test) / batch_size)  # 因为每个output有batch个数据
